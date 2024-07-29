@@ -1,3 +1,6 @@
+https://github.com/lvgalvao/One-Billion-Row-Challenge-Python/tree/main
+https://github.com/lvgalvao/1bilhaodelinhasaovivo
+
 # Um Bilhão de Linhas: Desafio de Processamento de Dados com Python
 
 ## Introdução
