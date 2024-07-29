@@ -53,9 +53,11 @@ O desafio é desenvolver um programa Python capaz de ler esse arquivo e calcular
 
 Para executar os scripts deste projeto, você precisará das seguintes bibliotecas:
 
-* Polars: `0.20.3`
-* DuckDB: `0.10.0`
-* Dask[complete]: `^2024.2.0`
+* pandas: `^2.2.2`
+* duckdb: `^1.0.0`
+* streamlit: `^1.37.0`
+* dask: `^2024.7.1`
+* polars: `^1.3.0`
 
 ## Resultados
 
@@ -90,7 +92,7 @@ Para executar este projeto e reproduzir os resultados:
 3. Execute o comando `python src/create_measurements.py` para gerar o arquivo de teste
 4. Tenha paciência e vá fazer um café, vai demorar uns 10 minutos para gerar o arquivo
 5. Certifique-se de instalar as versões especificadas das bibliotecas Dask, Polars e DuckDB
-6. Execute os scripts `python src/using_python.py`, `python src/using_pandas.py`, `python src/using_dask.py`, `python src/using_polars.py` e `python src/using_duckdb.py` através de um terminal ou ambiente de desenvolvimento que suporte Python.
+6. Execute os scripts `python src/etl_python.py`, `python src/etl_pandas.py`, `python src/etl_dask.py`, `python src/etl_polars.py` e `python src/etl_duckdb.py` através de um terminal ou ambiente de desenvolvimento que suporte Python.
 
 Este projeto destaca a versatilidade do ecossistema Python para tarefas de processamento de dados, oferecendo valiosas lições sobre escolha de ferramentas para análises em grande escala.
 
