@@ -1,9 +1,13 @@
 [tool.poetry]
-name = "1 bilhão de linhas"
+name = "um-bilhao-de-linhas"
 version = "0.1.0"
 description = ""
 authors = ["Thiago Silva Farias <thiago_protect@hotmail.com>"]
 readme = "README.md"
+
+packages = [
+    { include = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
