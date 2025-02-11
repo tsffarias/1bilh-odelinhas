@@ -2,7 +2,7 @@
 
 ## Diagrama
 
-![arquitetura](/img/arquitetura.png)
+![arquitetura](/img/arquitetura_1.1.png)
 
 ## Introdução
 
@@ -72,6 +72,7 @@ Os testes foram realizados em um laptop equipado com um processador M1 da Apple 
 | Bash + awk | 25 minutos |
 | Python | 20 minutos |
 | Python + Pandas | 263 sec |
+| Python + Fireducks | x sec |
 | Python + Dask | 155.62 sec  |
 | Python + Polars | 33.86 sec |
 | Python + Duckdb | 14.98 sec |
