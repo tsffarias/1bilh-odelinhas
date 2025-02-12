@@ -62,6 +62,7 @@ Para executar os scripts deste projeto, você precisará das seguintes bibliotec
 * streamlit: `^1.37.0`
 * dask: `^2024.7.1`
 * polars: `^1.3.0`
+* Apache Airflow (via Astro CLI)
 
 ## Resultados
 
@@ -98,14 +99,45 @@ Duckdb vence tambem com 1 milhao de linhas, realmente é o melhor.
 Para executar este projeto e reproduzir os resultados:
 
 1. Clone esse repositório
-2. Definir a versao do Python usando o `pyenv local 3.12.1`
-2. `poetry env use 3.12.1`, `poetry install --no-root` e `poetry lock --no-update`
-3. Execute o comando `python src/create_measurements.py` para gerar o arquivo de teste
-4. Tenha paciência e vá fazer um café, vai demorar uns 10 minutos para gerar o arquivo
-5. Certifique-se de instalar as versões especificadas das bibliotecas Dask, Polars e DuckDB
-6. Execute os scripts `python src/etl_python.py`, `python src/etl_pandas.py`, `python src/etl_dask.py`, `python src/etl_polars.py` e `python src/etl_duckdb.py` através de um terminal ou ambiente de desenvolvimento que suporte Python.
+2. Definir a versão do Python usando o `pyenv local 3.12.1`
+3. Execute os comandos:
+   ```bash
+   poetry env use 3.12.1
+   poetry install --no-root
+   poetry lock --no-update
+   ```
+4. Execute o comando `python src/create_measurements.py` para gerar o arquivo de teste
+5. Aguarde alguns minutos para a geração completa do arquivo
+6. Execute os scripts:
+   ```bash
+   python src/etl_python.py
+   python src/etl_pandas.py
+   python src/etl_fireducks.py
+   python src/etl_dask.py
+   python src/etl_polars.py
+   python src/etl_duckdb.py
+   ```
 
-Este projeto destaca a versatilidade do ecossistema Python para tarefas de processamento de dados, oferecendo valiosas lições sobre escolha de ferramentas para análises em grande escala.
+## Executando o Apache Airflow
+
+Este projeto utiliza o Apache Airflow para gerenciar e automatizar os fluxos de processamento de dados. Para iniciar o Airflow, siga os passos abaixo:
+
+1. Navegue até o diretório do Airflow:
+   ```bash
+   cd src/airflow
+   ```
+2. Inicie o ambiente com Astro CLI:
+   ```bash
+   astro dev start
+   ```
+3. Acesse a interface web do Airflow em `http://localhost:8080`
+4. Para verificar os DAGs disponíveis e iniciar a execução, ative os DAGs necessários na interface
+
+Caso queira parar a execução do Airflow, utilize:
+
+```bash
+astro dev stop
+```
 
 ## Bonus
 
@@ -151,3 +183,7 @@ Ao executar o script, você verá a barra de progresso (se pv estiver instalado 
 Para dúvidas, sugestões ou feedbacks:
 
 * **Thiago Silva** - [Linkedin](https://www.linkedin.com/in/thiagosilvafarias/)
+
+
+
+

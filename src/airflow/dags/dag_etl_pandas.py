@@ -1,69 +1,108 @@
-import pandas as pd
-import os
-from multiprocessing import Pool, cpu_count
-from airflow.decorators import dag, task
-from datetime import datetime
+"""
+Exemplo de DAG usando paralelismo via várias tasks para processar chunks no Airflow.
+"""
 
-# Configurações globais
-DATA_PATH = "/usr/local/airflow/include/measurements.txt"
-OUTPUT_PATH = "/usr/local/airflow/include/measurements_summary.parquet"
-TOTAL_LINHAS = 1_000_000_000  # Número total de linhas esperado
-CHUNKSIZE = 100_000_000  # Tamanho do chunk
-CONCURRENCY = cpu_count()  # Número de núcleos disponíveis
+import os
+import pandas as pd
+from datetime import datetime
+from airflow.decorators import dag, task
+
+# =========================
+# Configurações Globais
+# =========================
+DATA_PATH = "/usr/local/airflow/include/measurements.txt"           # Path do arquivo original
+OUTPUT_PATH_FINAL = "/usr/local/airflow/include/final_summary.parquet"  # Resultado final
+TMP_FOLDER = "/usr/local/airflow/include/tmp_chunks"                # Onde salvaremos os parquets parciais
+TOTAL_LINHAS = 1_000_000_000  # Numero total de linhas esperado
+CHUNKSIZE = 5_000_000       # Tamanho de cada chunk
 
 @dag(
     schedule="@daily",
     start_date=datetime(2024, 1, 1),
     catchup=False,
     default_args={"owner": "airflow", "retries": 3},
-    tags=["pandas", "etl"],
+    tags=["pandas", "etl", "parallel"],
 )
-def pandas_airflow_etl():
+def pandas_parallel_chunks():
+    """
+    DAG de exemplo que demonstra como quebrar o processamento em várias tasks.
+    Cada task processa um chunk do dataset, e no final unificamos os resultados.
+    """
 
     @task()
-    def extract():
-        """ Lê os dados do CSV em chunks e retorna uma lista de DataFrames. """
+    def create_chunk_list():
+        # Quantos chunks serão processados?
+        total_chunks = TOTAL_LINHAS // CHUNKSIZE + (1 if TOTAL_LINHAS % CHUNKSIZE != 0 else 0)
+        return list(range(total_chunks))
+
+    @task()
+    def process_chunk(chunk_index: int):
+        """
+        Lê apenas as linhas correspondentes ao 'chunk_index', realiza a agregação e
+        salva o resultado em um arquivo parquet parcial.
+        """
+        # Se a pasta TMP_FOLDER não existir, cria
+        if not os.path.exists(TMP_FOLDER):
+            os.makedirs(TMP_FOLDER, exist_ok=True)
+
+        start_row = chunk_index * CHUNKSIZE
+        nrows = CHUNKSIZE
+
         if not os.path.exists(DATA_PATH):
-            raise FileNotFoundError(f"🚨 Arquivo não encontrado: {DATA_PATH}")
+            raise FileNotFoundError(f"Arquivo não encontrado: {DATA_PATH}")
 
-        total_chunks = TOTAL_LINHAS // CHUNKSIZE + (1 if TOTAL_LINHAS % CHUNKSIZE else 0)
-        chunks = []
-        
-        with pd.read_csv(DATA_PATH, sep=';', header=None, names=['station', 'measure'], chunksize=CHUNKSIZE) as reader:
-            for chunk in reader:
-                chunks.append(chunk)
+        # Lê o pedaço do CSV usando skiprows e nrows
+        df = pd.read_csv(
+            DATA_PATH,
+            sep=';',
+            header=None,
+            names=['station', 'measure'],
+            skiprows=range(1, start_row + 1),  # Pula linhas até o ponto inicial
+            nrows=nrows
+        )
 
-        print(f"✅ Extração concluída. {len(chunks)} chunks carregados de um total estimado de {total_chunks}.")
-        return chunks
+        # Agrega
+        df_agg = df.groupby('station')["measure"].agg(['min', 'max', 'mean']).reset_index()
 
-    @task()
-    def transform(chunks):
-        """ Processa os dados em paralelo e agrega os valores por estação. """
-        def process_chunk(chunk):
-            return chunk.groupby('station')['measure'].agg(['min', 'max', 'mean']).reset_index()
+        # Salva parcial
+        partial_path = os.path.join(TMP_FOLDER, f"measurements_summary_{chunk_index}.parquet")
+        df_agg.to_parquet(partial_path, index=False)
 
-        with Pool(CONCURRENCY) as pool:
-            results = pool.map(process_chunk, chunks)
-
-        final_df = pd.concat(results, ignore_index=True)
-        final_aggregated_df = final_df.groupby('station').agg({
-            'min': 'min',
-            'max': 'max',
-            'mean': 'mean'
-        }).reset_index().sort_values('station')
-
-        print(f"✅ Transformação concluída. {len(final_aggregated_df)} registros agregados.")
-        return final_aggregated_df
+        return partial_path
 
     @task()
-    def load(transformed_df):
-        """ Salva o DataFrame transformado em um arquivo Parquet. """
-        transformed_df.to_parquet(OUTPUT_PATH, index=False)
-        print(f"✅ Dados salvos com sucesso em {OUTPUT_PATH}")
+    def merge_parquets(partial_paths: list):
+        """
+        Lê todos os parquets parciais gerados e faz o merge (nova agregação),
+        salvando o resultado final em OUTPUT_PATH_FINAL.
+        """
+        if not partial_paths:
+            raise ValueError("Nenhum arquivo parcial foi gerado para merge.")
 
-    # Pipeline ETL
-    raw_data = extract()
-    transformed_data = transform(raw_data)
-    load(transformed_data)
+        all_dfs = []
+        for path in partial_paths:
+            df_temp = pd.read_parquet(path)
+            all_dfs.append(df_temp)
 
-pandas_airflow_etl()
+        final_df = pd.concat(all_dfs, ignore_index=True)
+        # Faz a agregação final
+        final_aggregated_df = (
+            final_df.groupby('station')
+                    .agg({'min': 'min', 'max': 'max', 'mean': 'mean'})
+                    .reset_index()
+                    .sort_values('station')
+        )
+        # Salva
+        final_aggregated_df.to_parquet(OUTPUT_PATH_FINAL, index=False)
+        print(f"✅ Resultado final salvo em {OUTPUT_PATH_FINAL}")
+
+    # 1. Gerar a lista de chunks
+    chunk_list = create_chunk_list()
+
+    # 2. Rodar process_chunk em paralelo para cada chunk
+    partial_files = process_chunk.expand(chunk_index=chunk_list)
+
+    # 3. Fazer o merge final após todas as tasks anteriores concluírem
+    merge_parquets(partial_files)
+
+dag_instance = pandas_parallel_chunks()
