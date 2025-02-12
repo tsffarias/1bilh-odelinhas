@@ -7,7 +7,7 @@ DATA_PATH = "/usr/local/airflow/include/measurements.txt"
 OUTPUT_PATH = "/usr/local/airflow/include/measurements_summary.parquet"
 EXTRACT_PATH = "/usr/local/airflow/include/extracted_measurements.parquet"
 TRANSFORM_PATH = "/usr/local/airflow/include/transformed_measurements.parquet"
-STREAMING_CHUNK_SIZE = 5_000
+STREAMING_CHUNK_SIZE = 100_000_000
 
 @dag(
     schedule="@daily",

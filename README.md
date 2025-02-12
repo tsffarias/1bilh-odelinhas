@@ -59,14 +59,15 @@ Para executar os scripts deste projeto, você precisará das seguintes bibliotec
 
 * pandas: `^2.2.2`
 * duckdb: `^1.0.0`
-* streamlit: `^1.37.0`
 * dask: `^2024.7.1`
 * polars: `^1.3.0`
+* fireducks: `^1.2.1`
+* streamlit: `^1.37.0`
 * Apache Airflow (via Astro CLI)
 
 ## Resultados
 
-Os testes foram realizados em um laptop equipado com um processador M1 da Apple e 8GB de RAM. As implementações utilizaram abordagens puramente Python, Pandas, Dask, Polars e DuckDB. Os resultados de tempo de execução para processar o arquivo de 1 bilhão de linhas são apresentados abaixo:
+Os testes foram realizados em um laptop equipado com um processador M1 da Apple e 8GB de RAM. As implementações utilizaram abordagens puramente Python, Pandas, Dask, Polars, Fireducks e DuckDB. Os resultados de tempo de execução para processar o arquivo de 1 bilhão de linhas são apresentados abaixo:
 
 | Implementação | Tempo |
 | --- | --- |
@@ -106,7 +107,7 @@ Para executar este projeto e reproduzir os resultados:
    poetry install --no-root
    poetry lock --no-update
    ```
-4. Execute o comando `python src/create_measurements.py` para gerar o arquivo de teste
+4. Execute o comando `python src/create_measurements.py` para gerar o arquivo de teste (caso queira aumentar ou diminuir o tamanho do arquivo, altere o valor da variavel num_rows_to_create=1_000_000_000)
 5. Aguarde alguns minutos para a geração completa do arquivo
 6. Execute os scripts:
    ```bash

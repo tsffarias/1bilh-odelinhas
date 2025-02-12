@@ -14,7 +14,7 @@ DATA_PATH = "/usr/local/airflow/include/measurements.txt"           # Path do ar
 OUTPUT_PATH_FINAL = "/usr/local/airflow/include/final_summary.parquet"  # Resultado final
 TMP_FOLDER = "/usr/local/airflow/include/tmp_chunks"                # Onde salvaremos os parquets parciais
 TOTAL_LINHAS = 1_000_000_000  # Numero total de linhas esperado
-CHUNKSIZE = 5_000_000       # Tamanho de cada chunk
+CHUNKSIZE = 100_000_000       # Tamanho de cada chunk
 
 @dag(
     schedule="@daily",
