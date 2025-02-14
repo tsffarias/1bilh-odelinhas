@@ -5,3 +5,4 @@ tqdm==4.67.1
 dask==2024.12.1
 polars==1.22.0
 fireducks==1.2.1
+astro-run-dag # This package is needed for the astro run command. It will be removed before a deploy

@@ -31,6 +31,8 @@ def create_df_with_fireducks(filename, total_linhas, chunksize=chunksize):
         'max': 'max',
         'mean': 'mean'
     }).reset_index().sort_values('station')
+
+    final_aggregated_df.to_parquet("data/measurements_summary.parquet")
     
     return final_aggregated_df
 

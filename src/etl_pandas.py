@@ -7,13 +7,14 @@ CONCURRENCY = cpu_count()
 total_linhas = 1_000_000_000  # Total de linhas conhecido
 chunksize = 100_000_000  # Define o tamanho do chunk
 filename = "data/measurements.txt"  # Certifique-se de que este é o caminho correto para o arquivo
+output_path = "data/measurements_summary.parquet"
 
 def process_chunk(chunk):
     # Agrega os dados dentro do chunk usando Pandas
     aggregated = chunk.groupby('station')['measure'].agg(['min', 'max', 'mean']).reset_index()
     return aggregated
 
-def create_df_with_pandas(filename, total_linhas, chunksize=chunksize):
+def create_df_with_pandas(filename, output_path, total_linhas, chunksize=chunksize):
     total_chunks = total_linhas // chunksize + (1 if total_linhas % chunksize else 0)
     results = []
 
@@ -35,6 +36,8 @@ def create_df_with_pandas(filename, total_linhas, chunksize=chunksize):
         'mean': 'mean'
     }).reset_index().sort_values('station')
 
+    final_aggregated_df.to_parquet(output_path, index=False)
+
     return final_aggregated_df
 
 if __name__ == "__main__":
@@ -42,7 +45,7 @@ if __name__ == "__main__":
 
     print("Iniciando o processamento do arquivo.")
     start_time = time.time()
-    df = create_df_with_pandas(filename, total_linhas, chunksize)
+    df = create_df_with_pandas(filename, output_path, total_linhas, chunksize)
     took = time.time() - start_time
 
     print(df.head())

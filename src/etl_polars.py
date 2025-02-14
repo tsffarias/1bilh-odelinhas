@@ -5,7 +5,7 @@ import polars as pl
 # Twitter/x Handle: https://twitter.com/mr_le_fox
 # https://x.com/mr_le_fox/status/1741893400947839362?s=20
 def create_polars_df():
-    pl.Config.set_streaming_chunk_size(4000000)
+    pl.Config.set_streaming_chunk_size(100_000_000)
     return (
         pl.scan_csv(
             "data/measurements.txt", 
@@ -29,6 +29,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
     df = create_polars_df()
+    df.write_parquet("data/measurements_summary.parquet")
     took = time.time() - start_time
     print(df)
     print(f"Polars Took: {took:.2f} sec")

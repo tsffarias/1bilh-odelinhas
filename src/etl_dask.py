@@ -26,6 +26,7 @@ if __name__ == "__main__":
     
     # O cálculo real e a ordenação são feitos aqui
     result_df = df.compute().sort_values("station")
+    result_df.to_parquet("data/measurements_summary.parquet")
     took = time.time() - start_time
 
     print(result_df)
